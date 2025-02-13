@@ -3,33 +3,66 @@
   - Generar archivo json de configuración en Firebase y pegarlo en /android/app/
   - Poner en el main.dart dentro del void main():
 
-    WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp();
+      ...
+      WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp();
 
-    NotificationService notificationService = NotificationService();
-    await notificationService.initialize();
+      NotificationService notificationService = NotificationService();
+      await notificationService.initialize();
+      ...
   
   - Convertir MyApp en un StateFul widget
   - Pegar en MyApp:
     
-    final NotificationService notificationService;
+      ...
+      final NotificationService notificationService;
+      ...
 
   - Pegar en _MyStateApp():
 
-  late StreamSubscription _messageSubscription;
+    ...
+    late StreamSubscription _messageSubscription;
+    ...
 
     - Dentro de initState():
-
+      
+      ...
       _messageSubscription = widget.notificationService.messageStream.listen((message) {
         // Aquí puedes manejar el mensaje recibido
         print('Mensaje recibido en el stream: ${message.notification?.title}');
         // Realiza cualquier acción adicional aquí, como actualizar la UI
       });
+      ...
 
     - En dispose():
+      ...
+      _messageSubscription.cancel(); // Cancelar la suscripción cuando el widget se destruya
+      ...
 
-    _messageSubscription.cancel(); // Cancelar la suscripción cuando el widget se destruya
+  - Si se desea navegar en otras pantallas o mostrar un SnackBar en la app al dar clic en la notificación, se tiene que poner lo siguiente:
 
+  en _MyAppState():
+
+    ...
+    final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+    final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+    ...
+  
+  dentro del _messageSubscription listen (ejemplo de código usado):
+
+    ...
+    navigatorKey.currentState?.pushNamed('message', arguments: message.data['producto']);
+
+    final snackBar = SnackBar(content: Text(message.data['producto']));
+    scaffoldMessengerKey.currentState?.showSnackBar(snackBar);
+    ...
+
+  y, dentro del MaterialApp en el build, coloar los atributos:
+
+    ...
+    navigatorKey: navigatorKey, // Mavegar
+    scaffoldMessengerKey: scaffoldMessengerKey, // SnackBar
+    ...
 
 */
 
